@@ -1,0 +1,213 @@
+تتبع دخول وخروج اللاعب v2
+local Players, RunService, VirtualUser =
+	game:GetService("Players"),
+	game:GetService("RunService"),
+	game:GetService("VirtualUser")
+
+local LP = Players.LocalPlayer
+local gui = Instance.new("ScreenGui", LP:WaitForChild("PlayerGui"))
+gui.Name, gui.ResetOnSpawn = "PlayerTrackerUI", false
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 250, 0, 230)
+main.Position = UDim2.new(0, 10, 0, 10)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+
+local close = Instance.new("TextButton", main)
+close.Size = UDim2.new(0, 25, 0, 25)
+close.Position = UDim2.new(1, -30, 0, 0)
+close.Text = "X"
+close.TextColor3 = Color3.fromRGB(255, 70, 70)
+close.TextSize = 16
+close.Font = Enum.Font.GothamMedium
+close.BackgroundTransparency = 1
+close.MouseButton1Click:Connect(function()
+	gui.Enabled = false
+end)
+
+local mini = Instance.new("TextButton", main)
+mini.Size = UDim2.new(0, 25, 0, 25)
+mini.Position = UDim2.new(1, -60, 0, 0)
+mini.Text = "▭"
+mini.TextColor3 = Color3.new(1, 1, 1)
+mini.TextSize = 16
+mini.Font = Enum.Font.GothamMedium
+mini.BackgroundTransparency = 1
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, -120, 0, 25)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "تتبع دخول وخروج اللاعب  v2"
+title.Font = Enum.Font.GothamMedium
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+local nameBox = Instance.new("TextBox", main)
+nameBox.Size = UDim2.new(1, -20, 0, 30)
+nameBox.Position = UDim2.new(0, 10, 0, 30)
+nameBox.PlaceholderText = "اكتب اسم اللاعب هنا..."
+nameBox.Font = Enum.Font.GothamMedium
+nameBox.TextSize = 16
+nameBox.TextColor3 = Color3.fromRGB(230, 230, 230)
+nameBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+nameBox.BorderSizePixel = 0
+
+local enterL = Instance.new("TextLabel", main)
+enterL.Size = UDim2.new(1, -20, 0, 20)
+enterL.Position = UDim2.new(0, 10, 0, 70)
+enterL.BackgroundTransparency = 1
+enterL.Text = "مرات الدخول: 0"
+enterL.Font = Enum.Font.GothamMedium
+enterL.TextSize = 16
+enterL.TextColor3 = Color3.fromRGB(0, 255, 0)
+
+local leaveL = Instance.new("TextLabel", main)
+leaveL.Size = UDim2.new(1, -20, 0, 20)
+leaveL.Position = UDim2.new(0, 10, 0, 95)
+leaveL.BackgroundTransparency = 1
+leaveL.Text = "مرات الخروج: 0"
+leaveL.Font = Enum.Font.GothamMedium
+leaveL.TextSize = 16
+leaveL.TextColor3 = Color3.fromRGB(255, 0, 0)
+
+local timeL = Instance.new("TextLabel", main)
+timeL.Size = UDim2.new(1, -20, 0, 20)
+timeL.Position = UDim2.new(0, 10, 0, 120)
+timeL.BackgroundTransparency = 1
+timeL.Text = "وقت تشغيل السكربت: 00:00:00"
+timeL.Font = Enum.Font.GothamMedium
+timeL.TextSize = 16
+timeL.TextColor3 = Color3.fromRGB(255, 255, 0)
+
+local function formatTime(sec)
+	local h = math.floor(sec / 3600)
+	local m = math.floor((sec % 3600) / 60)
+	local s = sec % 60
+	return string.format("%02d:%02d:%02d", h, m, s)
+end
+
+local started = tick()
+RunService.RenderStepped:Connect(function()
+	local now = tick()
+	timeL.Text = "وقت تشغيل السكربت: " .. formatTime(math.floor(now - started))
+end)
+
+local arrow = Instance.new("TextButton", main)
+arrow.Size = UDim2.new(0, 30, 0, 20)
+arrow.Position = UDim2.new(1, -35, 0, 150)
+arrow.Text = ">"
+arrow.Font = Enum.Font.GothamMedium
+arrow.TextSize = 18
+arrow.TextColor3 = Color3.new(1, 1, 1)
+arrow.BackgroundTransparency = 1
+
+local logFrame = Instance.new("Frame", main)
+logFrame.Size = UDim2.new(0, 250, 0, 230)
+logFrame.Position = UDim2.new(1, 10, 0, 0)
+logFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+logFrame.BorderSizePixel = 0
+logFrame.Visible = false
+
+local scroll = Instance.new("ScrollingFrame", logFrame)
+scroll.Size = UDim2.new(1, 0, 1, 0)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ScrollBarThickness = 4
+scroll.BackgroundTransparency = 1
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 8)
+
+arrow.MouseButton1Click:Connect(function()
+	logFrame.Visible = not logFrame.Visible
+	arrow.Text = logFrame.Visible and "<" or ">"
+end)
+
+local madeBy = Instance.new("TextLabel", main)
+madeBy.Size = UDim2.new(1, -20, 0, 20)
+madeBy.Position = UDim2.new(0, 10, 0, 175)
+madeBy.BackgroundTransparency = 1
+madeBy.Text = "تم التطوير من قبل : Jastrow7 + 3NKABOOT"
+madeBy.Font = Enum.Font.GothamMedium
+madeBy.TextSize = 14
+madeBy.TextColor3 = Color3.new(1, 1, 1)
+
+local discord = Instance.new("TextLabel", main)
+discord.Size = UDim2.new(1, -20, 0, 20)
+discord.Position = UDim2.new(0, 10, 0, 195)
+discord.BackgroundTransparency = 1
+discord.Text = "دسكورد : ai9."
+discord.Font = Enum.Font.GothamMedium
+discord.TextSize = 14
+discord.TextColor3 = Color3.new(1, 1, 1)
+
+local inCnt, outCnt, targetName = 0, 0, nil
+local function addLine(txt)
+	local l = Instance.new("TextLabel", scroll)
+	l.Size = UDim2.new(1, -10, 0, 20)
+	l.BackgroundTransparency = 1
+	l.Text = txt
+	l.Font = Enum.Font.GothamMedium
+	l.TextSize = 14
+	l.TextXAlignment = Enum.TextXAlignment.Left
+	l.TextColor3 = Color3.new(1, 1, 1)
+	scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y)
+end
+
+nameBox.FocusLost:Connect(function()
+	targetName = nameBox.Text
+	inCnt, outCnt = 0, 0
+	enterL.Text = "مرات الدخول: 0"
+	leaveL.Text = "مرات الخروج: 0"
+	for _, c in ipairs(scroll:GetChildren()) do
+		if c:IsA("TextLabel") then
+			c:Destroy()
+		end
+	end
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p.Name == targetName then
+			inCnt += 1
+			enterL.Text = "مرات الدخول: " .. inCnt
+			addLine("دخل في: " .. os.date("%Y-%m-%d %H:%M"))
+		end
+	end
+end)
+
+Players.PlayerAdded:Connect(function(p)
+	if p.Name == targetName then
+		inCnt += 1
+		enterL.Text = "مرات الدخول: " .. inCnt
+		addLine("دخل في: " .. os.date("%Y-%m-%d %H:%M"))
+	end
+end)
+
+Players.PlayerRemoving:Connect(function(p)
+	if p.Name == targetName then
+		outCnt += 1
+		leaveL.Text = "مرات الخروج: " .. outCnt
+		addLine("خرج في: " .. os.date("%Y-%m-%d %H:%M"))
+	end
+end)
+
+local minimized = false
+mini.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	for _, o in ipairs(main:GetChildren()) do
+		if o ~= close and o ~= mini then
+			o.Visible = not minimized
+		end
+	end
+	main.Size = minimized and UDim2.new(0, 250, 0, 30) or UDim2.new(0, 250, 0, 230)
+end)
+
+-- Anti-AFK
+LP.Idled:Connect(function()
+	VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+	task.wait(1)
+	VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+end)
